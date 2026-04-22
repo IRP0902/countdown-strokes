@@ -29,16 +29,23 @@
       position:relative;
     }
 
+    /* FONDO FORZADO */
+    .bg-image{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:-4;
+      display:block;
+    }
+
     .bg{
       position:fixed;
       inset:0;
       z-index:-3;
-      background-image:
-        linear-gradient(to bottom, rgba(0,0,0,.12), rgba(0,0,0,.34)),
-        url("https://irp0902.github.io/countdown-strokes/bg.jpg");
-      background-position:center center;
-      background-size:cover;
-      background-repeat:no-repeat;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.10), rgba(0,0,0,.34));
     }
 
     .bg::after{
@@ -310,6 +317,7 @@
       white-space:nowrap;
     }
 
+    /* BOTONES MÁS PEQUEÑOS */
     .cta-row{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -321,13 +329,14 @@
       align-items:center;
       justify-content:center;
       gap:8px;
-      min-height:62px;
-      border-radius:18px;
+      min-height:54px;
+      border-radius:16px;
       text-decoration:none;
-      padding:10px 12px;
+      padding:8px 10px;
       border:1px solid transparent;
       box-shadow:0 10px 24px rgba(0,0,0,.20);
       cursor:pointer;
+      min-width:0;
     }
 
     .btn-blue{
@@ -343,25 +352,33 @@
     }
 
     .btn-icon{
-      font-size:22px;
+      font-size:18px;
       line-height:1;
       flex:0 0 auto;
     }
 
+    .btn-copy{
+      min-width:0;
+    }
+
     .btn-title{
-      font-size:12px;
+      font-size:10px;
       font-weight:800;
       text-transform:uppercase;
       letter-spacing:.02em;
       margin:0;
       white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .btn-sub{
       margin:2px 0 0;
-      font-size:11px;
+      font-size:10px;
       opacity:.88;
       white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .secret-box{
@@ -465,16 +482,21 @@
       }
 
       .btn-title{
-        font-size:11px;
+        font-size:9px;
       }
 
       .btn-sub{
-        font-size:10px;
+        font-size:9px;
       }
     }
   </style>
 </head>
 <body>
+  <img
+    class="bg-image"
+    src="https://irp0902.github.io/countdown-strokes/bg.jpg"
+    alt=""
+  />
   <div class="bg"></div>
   <div class="lights"></div>
 
@@ -540,7 +562,7 @@
     <section class="cta-row">
       <a class="btn btn-blue" href="https://open.spotify.com/artist/0epOFNiUfyON9EYx7Tpr6V" target="_blank" rel="noopener noreferrer">
         <div class="btn-icon">🎵</div>
-        <div>
+        <div class="btn-copy">
           <p class="btn-title">Escuchar antes del concierto</p>
           <p class="btn-sub">entra en ambiente</p>
         </div>
@@ -548,7 +570,7 @@
 
       <button class="btn btn-dark" id="secretBtn" type="button">
         <div class="btn-icon">🎁</div>
-        <div style="text-align:left">
+        <div class="btn-copy" style="text-align:left">
           <p class="btn-title" style="color:#ff5d8d">Tengo algo para ti</p>
           <p class="btn-sub">toca aquí</p>
         </div>
