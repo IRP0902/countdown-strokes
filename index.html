@@ -486,6 +486,29 @@
         font-size:8px;
       }
     }
+    .special-banner{display:none;padding:15px 12px;border-radius:20px;background:linear-gradient(125deg,rgba(15,49,110,.92),rgba(74,19,72,.90));border:1px solid rgba(133,192,255,.55);box-shadow:0 0 32px rgba(47,156,255,.25);animation:bannerIn .9s ease both}
+    .special-banner.show{display:block}
+    .special-banner h2{font-size:clamp(21px,5.5vw,29px);margin:0 0 6px;line-height:1.2;text-shadow:0 0 20px rgba(104,170,255,.7)}
+    .special-banner p{font-size:13px;line-height:1.45;margin:0;color:#ffeaf6}
+    .celebration{animation:bannerIn .7s ease both, glow 2s ease-in-out infinite alternate}
+    @keyframes bannerIn{from{opacity:0;transform:translateY(15px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes glow{from{box-shadow:0 0 18px rgba(47,156,255,.18)}to{box-shadow:0 0 38px rgba(255,93,141,.4)}}
+    .confetti-piece{position:fixed;top:-20px;width:9px;height:15px;z-index:40;pointer-events:none;animation:confettiFall var(--duration) linear forwards;transform:rotate(var(--rotation))}
+    @keyframes confettiFall{to{transform:translate(var(--drift),110vh) rotate(900deg);opacity:0}}
+
+    /* Carta claramente interactiva, optimizada para móvil */
+    #letterArea{width:100%;}
+    .letter-button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:62px;padding:15px 17px;border-radius:17px;border:2px solid #ff8cb8;background:linear-gradient(135deg,#a92966,#e04e88);color:#fff;font:700 15px/1.35 Arial,sans-serif;text-align:center;box-shadow:0 7px 24px rgba(255,72,142,.33);cursor:pointer;animation:letterPulse 2.7s ease-in-out infinite;}
+    .letter-button:focus-visible{outline:3px solid white;outline-offset:3px;}
+    .letter-button .button-arrow{font-size:20px;flex-shrink:0;transition:transform .2s;}
+    .letter-button[aria-expanded="true"] .button-arrow{transform:rotate(180deg);}
+    .letter-hint{text-align:center;color:#fff2fa;font-size:12px;font-weight:700;margin:7px 0 0;text-shadow:0 2px 7px #000;}
+    .letter{margin-top:12px;padding:20px 18px;border-radius:17px;background:rgba(6,12,27,.94);border:1px solid rgba(255,145,191,.55);box-shadow:0 12px 30px rgba(0,0,0,.4);text-align:left;color:#fff;font-size:15px;line-height:1.58;}
+    .letter p{margin:0 0 12px;}.letter p:last-child{margin-bottom:0;}.letter .eyebrow{color:#ff9cc6;text-transform:uppercase;letter-spacing:.07em;font-size:11px;font-weight:700;}
+    .letter[hidden],#letterArea[hidden]{display:none!important;}
+    @keyframes letterPulse{50%{box-shadow:0 8px 30px rgba(255,103,167,.65);}}
+    @media(max-width:430px){.letter-button{font-size:14px;padding:13px 12px;min-height:64px}.letter{font-size:14px;padding:17px 15px}}
+    @media(prefers-reduced-motion:reduce){.letter-button{animation:none}}
   </style>
 </head>
 <body>
@@ -495,6 +518,7 @@
     <div class="lights"></div>
   </div>
 
+  <div class="stage-glow" aria-hidden="true"></div>
   <main class="wrap">
     <div class="topline">
       <span>20 OCTUBRE</span>
@@ -508,6 +532,20 @@
       <p class="sub1">esto no es solo un concierto...</p>
       <p class="sub2">es <span class="accent">TU noche</span> 💗</p>
       <div class="pill">📍 Palau Sant Jordi • 20:00</div>
+    </section>
+
+    <div id="specialBanner" class="special-banner" aria-live="polite"></div>
+    <section id="letterArea" hidden>
+      <button id="letterButton" class="letter-button" type="button" aria-expanded="false"><span id="letterButtonText">💌 Silvia, hay algo más que quiero decirte…</span><span class="button-arrow" aria-hidden="true">⌄</span></button>
+      <p class="letter-hint">👆 Pulsa aquí para descubrir tu mensaje</p>
+      <div id="letterContent" class="letter" hidden>
+        <p class="eyebrow">Una nota para Silvia · 20 de octubre</p>
+        <p>Silvia, hay algo muy bonito en tu manera de sentir las cosas.</p>
+        <p>Tienes esa forma tan tuya de vivirlo todo intensamente, de emocionarte de verdad y de poner el corazón en aquello que te hace feliz.</p>
+        <p>Y con la música pasa lo mismo. Tú no solo la escuchas, la vives, la sientes y te dejas llevar por ella.</p>
+        <p>Hoy solo deseo que disfrutes cada canción, cada acorde y cada instante, sin contener nada, siendo tú.</p>
+        <p><strong>Porque lo especial de ti no es solo lo mucho que sientes, sino esa manera tan bonita que tienes de sentirlo.</strong> 💙🎸</p>
+      </div>
     </section>
 
     <section class="card count-card">
@@ -589,52 +627,93 @@
   </main>
 
   <script>
-    const concertDate = new Date("2026-10-20T20:00:00");
+    // Horarios siempre interpretados en Barcelona, incluso si se abre desde otro país.
+    const concertDate = new Date("2026-10-20T20:00:00+02:00");
+    const dayStart = new Date("2026-10-20T00:00:00+02:00");
     const countdown = document.getElementById("countdown");
+    const banner = document.getElementById("specialBanner");
+    const letterArea = document.getElementById("letterArea");
+    const letterButton = document.getElementById("letterButton");
+    const letterContent = document.getElementById("letterContent");
+    const letterButtonText = document.getElementById("letterButtonText");
+    letterButton.addEventListener("click",()=>{
+      letterContent.hidden=!letterContent.hidden;
+      letterButton.setAttribute("aria-expanded",String(!letterContent.hidden));
+      if(!letterContent.hidden) createSparks(window.innerWidth/2,window.innerHeight/2);
+    });
+    const concertLetter = `<p class="eyebrow">El momento ha llegado · 20 de octubre</p>
+        <p>Dicen que todo llega… aunque cuando esperas algo con tantas ganas, parece que el tiempo no pasa nunca.</p>
+        <p>Han sido días de ilusión, de imaginar cómo sería este momento, de contar las horas y de desear que llegara esta noche.</p>
+        <p>Y ahora mírate, Silvia: <strong>se acabó la espera. Ya estás aquí.</strong></p>
+        <p>Que suene la primera canción, que se enciendan las luces y que todo lo demás desaparezca por un rato.</p>
+        <p><strong>Después de tanto esperar, ahora solo queda una cosa: vivirlo con toda el alma. Esta noche es tuya.</strong> 🎸💙</p>`;
+    const dayLetter = letterContent.innerHTML;
+    const dayLetterButton = '💌 Silvia, hay algo más que quiero decirte…';
+    const concertLetterButton = '💌 Silvia, todo llega… y tu momento ya está aquí';
     const secretBtn = document.getElementById("secretBtn");
     const secretBox = document.getElementById("secretBox");
-
-    function pad(n){
-      return String(n).padStart(2, "0");
+    let celebrated = false;
+    function currentTime(){ return new Date(); }
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function renderUnit(value,label){
+      return `<div class="unit"><div class="num">${value}</div><div class="label">${label}</div></div>`;
     }
-
-    function renderUnit(value, label){
-      return `
-        <div class="unit">
-          <div class="num">${value}</div>
-          <div class="label">${label}</div>
-        </div>
-      `;
+    function celebrate(){
+      if(celebrated) return;
+      celebrated=true;
+      const colors=["#2f9cff","#ff5d8d","#ffffff","#ffd166","#9f8cff"];
+      for(let i=0;i<90;i++){
+        const el=document.createElement("span");
+        el.className="confetti-piece";
+        el.style.left=Math.random()*100+"vw";
+        el.style.background=colors[i%colors.length];
+        el.style.setProperty("--duration",(3+Math.random()*3)+"s");
+        el.style.setProperty("--drift",(Math.random()*240-120)+"px");
+        el.style.setProperty("--rotation",(Math.random()*360)+"deg");
+        el.style.animationDelay=(Math.random()*1.5)+"s";
+        document.body.appendChild(el);
+        el.addEventListener("animationend",()=>el.remove());
+      }
     }
-
     function updateCountdown(){
-      const now = new Date();
-      const diff = concertDate - now;
-
-      if (diff <= 0) {
-        countdown.innerHTML = `
-          <div class="unit" style="grid-column:1 / -1">
-            <div class="num" style="font-size:36px">HOY ES EL DÍA 🔥</div>
-          </div>
-        `;
+      const now=currentTime();
+      const diff=concertDate-now;
+      const isSpecial=now>=dayStart;
+      document.body.classList.toggle('music-day',isSpecial);
+      letterArea.hidden=!isSpecial;
+      const isConcert = diff<=0;
+      const wantedButton = isConcert ? concertLetterButton : dayLetterButton;
+      const wantedLetter = isConcert ? concertLetter : dayLetter;
+      if(letterButtonText.textContent !== wantedButton){
+        letterButtonText.textContent=wantedButton;
+        letterContent.innerHTML=wantedLetter;
+        letterContent.hidden=true;
+        letterButton.setAttribute('aria-expanded','false');
+      }
+      if(!isSpecial){letterContent.hidden=true;letterButton.setAttribute('aria-expanded','false');}
+      if(diff<=0){
+        banner.className="special-banner show celebration";
+        banner.innerHTML="<h2>🔥 ¡QUE EMPIECE LA MAGIA, SILVIA! 🎸</h2><p>Olvídate de todo, canta, salta, emociónate y disfruta cada segundo.<br><br>Porque hay noches que se olvidan…<br><strong>Y otras que se quedan sonando dentro de ti para siempre.</strong> 🎶💗</p>";
+        countdown.innerHTML='<div class="unit" style="grid-column:1/-1"><div class="num" style="font-size:clamp(23px,6vw,34px)">¡ESTA NOCHE ES TUYA! 🔥</div></div>';
+        celebrate();
         return;
       }
-
-      const totalSeconds = Math.floor(diff / 1000);
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-
-      countdown.innerHTML =
-        renderUnit(days, "días") +
-        renderUnit(pad(hours), "horas") +
-        renderUnit(pad(minutes), "minutos") +
-        renderUnit(pad(seconds), "segundos");
+      if(now>=dayStart){
+        banner.className="special-banner show";
+        banner.innerHTML="<h2>🎸 ¡SILVIA, HOY ES TU GRAN DÍA! 🔥</h2><p>Hay personas que escuchan música… y personas que la sienten.<br><br>Tú eres de las que viven cada canción, de las que se emocionan con una melodía y convierten un concierto en un recuerdo para siempre.<br><br>Hoy no vas simplemente a ver a The Strokes.<br><strong>Hoy vas a vivir uno de esos momentos que hacen que ames tanto la música.</strong> 💙</p>";
+      } else {
+        banner.className="special-banner";
+        banner.innerHTML="";
+      }
+      const totalSeconds=Math.floor(diff/1000);
+      const days=Math.floor(totalSeconds/86400);
+      const hours=Math.floor((totalSeconds%86400)/3600);
+      const minutes=Math.floor((totalSeconds%3600)/60);
+      const seconds=totalSeconds%60;
+      countdown.innerHTML=renderUnit(days,"días")+renderUnit(pad(hours),"horas")+renderUnit(pad(minutes),"minutos")+renderUnit(pad(seconds),"segundos");
     }
-
     updateCountdown();
-    setInterval(updateCountdown, 1000);
+    setInterval(updateCountdown,1000);
 
     secretBtn.addEventListener("click", () => {
       secretBox.classList.toggle("show");
